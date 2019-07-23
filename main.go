@@ -60,6 +60,7 @@ func main() {
 		}
 		server = gooey.Server{
 			IndexHtml:            INDEX,
+			FavIcon:              FAVICON,
 			WebServeDir:          ".",
 			ForceIndexAndFavIcon: true,
 		}

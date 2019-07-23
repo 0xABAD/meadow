@@ -1,0 +1,12 @@
+github.com/0xABAD/filewatch v1.0.0 h1:U6rWhIEaJ2X2dzNvB0Vk/8ZR3vX0MFskwC/nm0WmIMc=
+github.com/0xABAD/filewatch v1.0.0/go.mod h1:n3X37U/znVifA+unmoZJ7qdyZA/Y0mVtPhckFE2wHdk=
+github.com/0xABAD/gooey v1.0.0 h1:dcm83SB2cl400C1u9i1qZSXzrlmbSdF4oxMhbJGCMec=
+github.com/0xABAD/gooey v1.0.0/go.mod h1:WMIYHZeAmzp/k00lLVRQB5VncfTn40RFXwhejkK+T+c=
+github.com/0xABAD/gooey v1.1.0 h1:w8eloqJfDNwqzwEfgF2eT5YoajNXR1tYQtGZ8oNhS7g=
+github.com/0xABAD/gooey v1.1.0/go.mod h1:WMIYHZeAmzp/k00lLVRQB5VncfTn40RFXwhejkK+T+c=
+github.com/gorilla/websocket v1.4.0 h1:WDFjx/TMzVgy9VdMMQi2K2Emtwi2QcUQsztZ/zLaH/Q=
+github.com/gorilla/websocket v1.4.0/go.mod h1:E7qHFY5m1UJ88s3WnNqhKjPHQ0heANvMoAMk2YaljkQ=
+github.com/russross/blackfriday v2.0.0+incompatible h1:cBXrhZNUf9C+La9/YpS+UHpUT8YD6Td9ZMSU9APFcsk=
+github.com/russross/blackfriday v2.0.0+incompatible/go.mod h1:JO/DiYxRf+HjHt06OyowR9PTA263kcR/rfWxYHBV53g=
+github.com/shurcooL/sanitized_anchor_name v1.0.0 h1:PdmoCO6wvbs+7yrJyMORt4/BmY5IYyJwS/kOiWx8mHo=
+github.com/shurcooL/sanitized_anchor_name v1.0.0/go.mod h1:1NzhyTcUVG4SuEtjjoZeVRXNmyL/1OwPU0+IJeTBvfc=

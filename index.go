@@ -12,11 +12,6 @@ a.OpenNewTab=function(){var a=new XMLHttpRequest;a.open("GET",window.location+"g
 document.createElement("script");b.id="gooey-reload-js-content";b.innerHTML=a;document.head.appendChild(b)};b=b.GooeyContent;if(""!==b.Body){document.body.innerHTML=b.Body;var c=document.getElementById("gooey-reload-js-content");c&&(document.head.removeChild(c),d(c.innerHTML))}""!==b.CSS&&((c=document.getElementById("gooey-reload-css-content"))?c.innerHTML=b.CSS:(c=document.createElement("style"),c.id="gooey-reload-css-content",c.innerHTML=b.CSS,document.head.appendChild(c)));""!==b.Javascript&&((c=
 document.getElementById("gooey-reload-js-content"))&&document.head.removeChild(c),d(b.Javascript))}else a.OnMessage(b)})})();
 </script>
-<script>
-(function() {
-  window.gooey.OnMessage = function(msg) {document.body.innerHTML = msg;};
-})();
-</script>
 <style>
 body {
   font-family: Helvetica, arial, sans-serif;
@@ -405,6 +400,22 @@ pre code, pre tt {
   border: none;
 }
 </style>
+<style id="custom-css"></style>
+<script>
+(function() {
+  window.gooey.OnMessage = function(msg) {
+    switch (msg.Tag) {
+    case "body":
+      document.body.innerHTML = msg.Content;
+      break;
+    case "css":
+      let style = document.getElementById("custom-css");
+      style.innerHTML = msg.Content;
+      break;
+    }
+  };
+})();
+</script>
 </head>
 <body></body>
 </html>

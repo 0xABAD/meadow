@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -13,15 +14,32 @@ import (
 	"github.com/russross/blackfriday"
 )
 
+var (
+	css  = flag.String("css", "", "Watch a custom CSS file for changes to include")
+	help bool
+)
+
+func init() {
+	const helpMsg = "Show this message"
+	flag.BoolVar(&help, "help", false, helpMsg)
+	flag.BoolVar(&help, "h", false, helpMsg)
+}
+
 func main() {
-	if len(os.Args) != 2 {
-		fmt.Println("Usage: meadow markdown-file")
+	flag.Usage = func() {
+		fmt.Fprintf(flag.CommandLine.Output(), "Usage: %s [OPTIONS] Markdown-File\n\n", os.Args[0])
+		flag.PrintDefaults()
+	}
+	flag.Parse()
+
+	if help || len(flag.Args()) != 1 {
+		flag.Usage()
 		return
 	}
 
 	const GiB = 1 << 30
 
-	file := os.Args[1]
+	file := flag.Arg(0)
 	if info, err := os.Stat(file); err != nil {
 		fmt.Printf("[FATAL] Can't inspect file %s: %s\n", file, err)
 		return
@@ -34,8 +52,12 @@ func main() {
 	}
 
 	var (
-		app    = Meadow{file, make(chan struct{})}
-		done   = make(chan struct{})
+		done = make(chan struct{})
+		app  = Meadow{
+			Watched: file,
+			Done:    make(chan struct{}),
+			CSS:     *css,
+		}
 		server = gooey.Server{
 			IndexHtml:            INDEX,
 			WebServeDir:          ".",
@@ -50,6 +72,7 @@ func main() {
 
 type Meadow struct {
 	Watched string        // File path of markdown file to be watched.
+	CSS     string        // File path of custom CSS file to be watched (empty for none).
 	Done    chan struct{} // Indicates when the app is ready to shutdown.
 }
 
@@ -62,11 +85,26 @@ func (m *Meadow) Start(closed <-chan struct{}, incoming <-chan []byte, outgoing 
 	signal.Notify(notify, os.Kill, os.Interrupt)
 
 	interval := 500 * time.Millisecond
-	updates, err := filewatch.Watch(doneWatching, m.Watched, false, &interval)
+	updatesMD, err := filewatch.Watch(doneWatching, m.Watched, false, &interval)
 	if err != nil {
 		fmt.Printf("[FATAL] Failed to watch file, %s: %s", m.Watched, err)
 		close(m.Done)
 		return
+	}
+
+	var updatesCSS <-chan []filewatch.Update
+	if m.CSS != "" {
+		ups, err := filewatch.Watch(doneWatching, m.CSS, false, &interval)
+		if err != nil {
+			fmt.Printf("[ERROR] Failed to watch file, %s: %s", m.CSS, err)
+		} else {
+			updatesCSS = ups
+		}
+	}
+
+	type Message struct {
+		Tag     string
+		Content string
 	}
 
 	for {
@@ -79,7 +117,7 @@ func (m *Meadow) Start(closed <-chan struct{}, incoming <-chan []byte, outgoing 
 			close(m.Done)
 			return
 
-		case ups := <-updates:
+		case ups := <-updatesMD:
 			for _, u := range ups {
 				bp := filepath.Base(u.AbsPath)
 				if bp != filepath.Base(m.Watched) {
@@ -105,7 +143,34 @@ func (m *Meadow) Start(closed <-chan struct{}, incoming <-chan []byte, outgoing 
 					} else {
 						ext := blackfriday.CommonExtensions | blackfriday.Footnotes
 						out := blackfriday.Run(contents, blackfriday.WithExtensions(ext))
-						outgoing <- fmt.Sprintf("%s", string(out))
+						outgoing <- Message{"body", string(out)}
+					}
+				}
+			}
+
+		case ups := <-updatesCSS:
+			for _, u := range ups {
+				bp := filepath.Base(u.AbsPath)
+				if bp != filepath.Base(m.CSS) {
+					continue
+				}
+				if u.WasRemoved {
+					fmt.Printf("[ERROR] %s has been removed, ignoring for now on.\n", bp)
+					m.CSS = ""
+				}
+				if u.Error != nil {
+					fmt.Printf("[ERROR] %s update error: %s\n", bp, u.Error)
+					fmt.Printf("[ERROR] Can't watch %s any longer, ignoring for now on.\n", bp)
+					m.CSS = ""
+				}
+				if f, err := os.Open(u.AbsPath); err != nil {
+					fmt.Println("[ERROR] Failed to open file:", err)
+				} else {
+					contents, err := ioutil.ReadAll(f)
+					if err != nil {
+						fmt.Println("[ERROR] Failed to read file contents:", err)
+					} else {
+						outgoing <- Message{"css", string(contents)}
 					}
 				}
 			}

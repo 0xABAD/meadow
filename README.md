@@ -13,9 +13,9 @@ processing software.
 Install
 -------
 
-Grab a copy of *Meadow* from the **Releases** tab for your specific
-system.  Alternatively, if you have golang 1.12+ installed then you
-can run:
+Grab a copy of *Meadow* from the [Releases](https://github.com/0xABAD/meadow/releases)
+tab for your specific system.  Alternatively, if you have golang 1.12+ installed then
+you can run:
 
 ```
 $ go get github.com/0xABAD/meadow

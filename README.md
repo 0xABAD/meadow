@@ -42,6 +42,9 @@ Further, the custom CSS file is also watched, along with your markdown
 file, so can make interactive changes and see them hot-reloaded into
 the browser.
 
+Note, that when you are down previewing your markdown file, just close the
+open tab in your browser and *meadow* will shutdown appropriately.
+
 License
 -------
 

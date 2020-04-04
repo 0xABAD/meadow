@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -11,7 +12,8 @@ import (
 
 	"github.com/0xABAD/filewatch"
 	"github.com/0xABAD/gooey"
-	"github.com/russross/blackfriday"
+	"github.com/yuin/goldmark"
+	"github.com/yuin/goldmark/extension"
 )
 
 var (
@@ -103,6 +105,11 @@ func (m *Meadow) Start(closed <-chan struct{}, incoming <-chan []byte, outgoing 
 		}
 	}
 
+	markdown := goldmark.New(
+		goldmark.WithExtensions(extension.GFM),
+		goldmark.WithExtensions(extension.Footnote),
+	)
+
 	type Message struct {
 		Tag     string
 		Content string
@@ -142,9 +149,13 @@ func (m *Meadow) Start(closed <-chan struct{}, incoming <-chan []byte, outgoing 
 					if err != nil {
 						fmt.Println("[ERROR] Failed to read file contents:", err)
 					} else {
-						ext := blackfriday.CommonExtensions | blackfriday.Footnotes
-						out := blackfriday.Run(contents, blackfriday.WithExtensions(ext))
-						outgoing <- Message{"body", string(out)}
+						buf := bytes.Buffer{}
+						err := markdown.Convert(contents, &buf)
+						if err != nil {
+							fmt.Println("[ERROR] Failed to convert markdown:", err)
+						} else {
+							outgoing <- Message{"body", buf.String()}
+						}
 					}
 				}
 			}
